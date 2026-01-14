@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Word Display</title>
+  <style>
+    :root {
+      --btn-bg: #ccc;
+      --btn-hover: #aaa;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 48px;
+      font-family: Arial;
+      margin: 0;
+      padding: 20px;
+      height: 100vh;
+      box-sizing: border-box;
+      line-height: 1.5;
+    }
+    #word {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+    .buttons button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      background: var(--btn-bg);
+      color: black;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.3s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .buttons button:hover {
+      background: var(--btn-hover);
+    }
+    #speedometer {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      height: 5px;
+      background: lightgray;
+    }
+    #speedBar {
+      height: 100%;
+      background: red;
+      width: 0%;
+      transition: width 0.3s;
+    }
+    #progressPercent {
+      position: absolute;
+      top: 40px;
+      left: 20px;
+      font-size: 14px;
+      color: inherit;
+    }
+    #progressBar {
+      position: absolute;
+      top: 30px;
+      left: 20px;
+      right: 20px;
+      height: 5px;
+      background: lightgray;
+    }
+    #progressFill {
+      height: 100%;
+      background: green;
+      width: 0%;
+      transition: width 0.3s;
+    }
+    #wpmDisplay {
+      position: absolute;
+      bottom: 30px;
+      left: 20px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div id="word"></div>
+  <div id="progressPercent">0%</div>
+  <div id="progressBar">
+    <div id="progressFill"></div>
+  </div>
+  <div class="buttons">
+    <button id="startBtn">Start</button>
+    <button id="stopBtn">Stop</button>
+  </div>
+  <div id="wpmDisplay">WPM: 300</div>
+  <div id="speedometer">
+    <div id="speedBar"></div>
+  </div>
+  <script>
+    let isPlaying = false;
+    document.getElementById('startBtn').addEventListener('click', () => {
+      window.displayAPI.start();
+    });
+    document.getElementById('stopBtn').addEventListener('click', () => {
+      window.displayAPI.stop();
+    });
+    window.displayAPI.onUpdateWpm((event, wpm) => {
+      document.getElementById('speedBar').style.width = (wpm / 9) + '%';
+      document.getElementById('wpmDisplay').innerText = 'WPM: ' + wpm;
+    });
+    window.displayAPI.onReadingStatus((event, status) => {
+      isPlaying = status;
+      updateButtonStyles();
+    });
+    window.displayAPI.onUpdateIndex((event, index, total) => {
+      const progress = total > 0 ? ((index + 1) / total) * 100 : 0; // +1 since index starts at 0
+      document.getElementById('progressFill').style.width = progress + '%';
+      document.getElementById('progressPercent').innerText = Math.round(progress) + '%';
+    });
+    function updateButtonStyles() {
+      const startBtn = document.getElementById('startBtn');
+      const stopBtn = document.getElementById('stopBtn');
+      startBtn.style.boxShadow = isPlaying ? 'inset 0 3px 6px rgba(0,0,0,0.3)' : '0 2px 4px rgba(0,0,0,0.2)';
+      startBtn.style.transform = isPlaying ? 'translateY(1px)' : 'translateY(0)';
+      stopBtn.style.boxShadow = !isPlaying ? 'inset 0 3px 6px rgba(0,0,0,0.3)' : '0 2px 4px rgba(0,0,0,0.2)';
+      stopBtn.style.transform = !isPlaying ? 'translateY(1px)' : 'translateY(0)';
+    }
+  </script>
+</body>
+</html>
